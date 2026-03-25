@@ -221,3 +221,6 @@ comment.txt
 # Chrome Profile - 登录信息保存在用户主目录，这里额外排除以防万一
 .qvxianjiuguo/
 .qvxian/
+
+# Debug files
+debug_page.html
