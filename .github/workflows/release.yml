@@ -49,9 +49,9 @@ jobs:
           PREFIX="qvxianjiuguo-skills-${TAG}"
           tar czf "${PREFIX}.tar.gz" \
             --transform "s,^,${PREFIX}/," \
-            skills/ src/ data/ SKILL.md pyproject.toml uv.lock LICENSE README.md
+            src/ data/ SKILL.md pyproject.toml uv.lock LICENSE README.md
           zip -r "${PREFIX}.zip" \
-            skills/ src/ data/ SKILL.md pyproject.toml uv.lock LICENSE README.md \
+            src/ data/ SKILL.md pyproject.toml uv.lock LICENSE README.md \
             -x '*.pyc' '__pycache__/*'
 
       - name: Create GitHub Release
