@@ -788,25 +788,53 @@ class QunarHandler(PlatformHandler):
                         duration = item.querySelector('.duration, .flight-duration, .f-time, [class*="duration"], .fly-time')?.innerText?.trim() || '';
                     }
                     
-                    // 价格 - 去哪儿新版和旧版多种选择器
-                    let priceText = '';
-                    const priceSelectors = [
-                        // 新版去哪儿
-                        '.col-price .price em', '.col-price em', '.b-price em',
-                        '.e-price em', '.prc em',
-                        // 旧版
-                        '.price em', '.b-price', '.flight-price em', 
-                        '.f-price', '.price', '[class*="price"] em',
-                        '.sale-price', '.low-price', '.em_price'
-                    ];
-                    for (const sel of priceSelectors) {
-                        const priceEl = item.querySelector(sel);
-                        if (priceEl) {
-                            priceText = priceEl.innerText?.trim() || '';
-                            if (priceText) break;
+                    // 价格 - 去哪儿使用字体反爬，真实价格在 <i> 标签的 title 属性中
+                    let price = 0;
+                    
+                    // 方法1: 从 <i> 标签的 title 属性获取真实价格（字体反爬）
+                    const priceContainer = item.querySelector('.col-price, .b-price, .e-price, .prc, [class*="price"]');
+                    if (priceContainer) {
+                        const iElements = priceContainer.querySelectorAll('i[title]');
+                        if (iElements.length > 0) {
+                            // 获取第一个 <i> 标签的 title 属性作为价格
+                            const titlePrice = iElements[0].getAttribute('title');
+                            if (titlePrice) {
+                                price = parseFloat(titlePrice) || 0;
+                            }
                         }
                     }
-                    const price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+                    
+                    // 方法2: 如果方法1失败，尝试从 b 标签的 title 属性获取
+                    if (price === 0) {
+                        const bWithTitle = item.querySelector('b[title]');
+                        if (bWithTitle) {
+                            const titlePrice = bWithTitle.getAttribute('title');
+                            if (titlePrice) {
+                                price = parseFloat(titlePrice) || 0;
+                            }
+                        }
+                    }
+                    
+                    // 方法3: 兜底方案 - 从 innerText 获取（可能不准确）
+                    if (price === 0) {
+                        const priceSelectors = [
+                            '.col-price .price em', '.col-price em', '.b-price em',
+                            '.e-price em', '.prc em',
+                            '.price em', '.b-price', '.flight-price em', 
+                            '.f-price', '.price', '[class*="price"] em',
+                            '.sale-price', '.low-price', '.em_price'
+                        ];
+                        for (const sel of priceSelectors) {
+                            const priceEl = item.querySelector(sel);
+                            if (priceEl) {
+                                const priceText = priceEl.innerText?.trim() || '';
+                                if (priceText) {
+                                    price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+                                    if (price > 0) break;
+                                }
+                            }
+                        }
+                    }
                     
                     // 去哪儿新版选择器 - 出发机场
                     let depAirport = '';
